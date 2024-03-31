@@ -8,9 +8,12 @@
   {% endif %}
   <ul>
     {% for product in products %}
+    <!-- <li>{{ product.title }} - {{ product.collection.title }}</li> -->
     <li>{{ product.title }}</li>
     {% endfor %}
   </ul>
+
+  <div>{{ product }}</div>
 </body>
 
 </html>
