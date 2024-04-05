@@ -12,7 +12,7 @@ from store.models import Collection, Product, OrderItem, Order, Customer
 from tags.models import Tag, TaggedItem
 
 def say_hello(request):
-  # return HttpResponse('Hello World!')
+  return HttpResponse('Hello World!')
 
   # query_set = Product.objects.all()
   # for product in query_set:
