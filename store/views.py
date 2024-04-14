@@ -5,11 +5,13 @@ from django.db.models.aggregates import Count
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.mixins import ListModelMixin, CreateModelMixin
+from rest_framework.generics import ListAPIView, CreateAPIView, ListCreateAPIView
 from rest_framework import status
 from .models import Product, Collection
 from .serializers import ProductSerializer, CollectionSerializer
 
-class ProductList(APIView):
+class ProductList0(APIView):
   def get(self, request):
     query_set = Product.objects.select_related('collection').all()
     serializer = ProductSerializer(query_set, many=True, context={'request': request})
@@ -20,6 +22,25 @@ class ProductList(APIView):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+  
+class ProductList(ListCreateAPIView):
+  queryset = Product.objects.select_related('collection').all()
+  serializer_class = ProductSerializer
+
+  ## no need without complex logic. Useful if we want data related to some user or their roles
+  # def get_queryset(self):
+  #   query_set = Product.objects.select_related('collection').all()
+  #   return query_set
+
+  ## same, no need
+  # def get_serializer_class(self):
+  #   if self.request.method == 'GET':
+  #     return ProductSerializer
+  #   return ProductSerializer
+  
+  def get_serializer_context(self):
+    return {'request': self.request}
+    
 
 # FIXME: remove, old way
 @api_view(['GET', 'POST'])
@@ -91,7 +112,12 @@ def product_detail(request, id):
       return Response({'error': 'Product cannot be deleted because it is associated with an order item.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
     product.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+  
+class CollectionList(ListCreateAPIView):
+  queryset = Collection.objects.annotate(products_count=Count('products')).all()
+  serializer_class = CollectionSerializer 
 
+# old, function based way
 @api_view(['GET', 'POST'])
 def collection_list(request):
   if request.method == 'GET':
