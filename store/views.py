@@ -7,14 +7,28 @@ from rest_framework import status
 from .models import Product, Collection
 from .serializers import ProductSerializer, CollectionSerializer
 
-@api_view()
+@api_view(['GET', 'POST'])
 def product_list(request):
   # return HttpResponse("Hello, world. You're at the store index.")
   # return Response("Hello, world. You're at the store index.")
 
-  query_set = Product.objects.select_related('collection').all()
-  serializer = ProductSerializer(query_set, many=True, context={'request': request})
-  return Response(serializer.data)
+  if request.method == 'GET':
+    query_set = Product.objects.select_related('collection').all()
+    serializer = ProductSerializer(query_set, many=True, context={'request': request})
+    return Response(serializer.data)
+
+  elif request.method == 'POST':
+    serializer = ProductSerializer(data=request.data)
+    # if serializer.is_valid():
+    #   serializer.save()
+    #   return Response(serializer.data, status=status.HTTP_201_CREATED)
+    # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # no if
+    serializer.is_valid(raise_exception=True)
+    # print(serializer.validated_data)
+    serializer.save()
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 @api_view()
 def product_detail(request, id):

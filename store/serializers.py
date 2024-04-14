@@ -2,19 +2,16 @@ from decimal import Decimal
 from rest_framework import serializers
 from .models import Collection, Product, Cart, CartItem, Order, OrderItem
 
-class CollectionSerializer(serializers.Serializer):
+class CollectionSerializer0(serializers.Serializer):
   id = serializers.IntegerField()
   title = serializers.CharField(max_length=255)
 
-  # def create(self, validated_data):
-  #   return Collection(**validated_data)
+class CollectionSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Collection
+    fields = ['id', 'title']
 
-  # def update(self, instance, validated_data):
-  #   instance.title = validated_data.get('title', instance.title)
-  #   instance.save()
-  #   return instance
-
-class ProductSerializer(serializers.Serializer):
+class ProductSerializer0(serializers.Serializer):
   id = serializers.IntegerField()
   title = serializers.CharField(max_length=255)
   price = serializers.DecimalField(max_digits=6, decimal_places=2, source='unit_price')
@@ -30,6 +27,12 @@ class ProductSerializer(serializers.Serializer):
   def calculate_tax(self, product: Product):
     return product.unit_price * Decimal(1.1)
 
-  # class Meta:
-  #   model = Product
-  #   fields = ['id', 'title', 'unit_price']
+class ProductSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Product
+    fields = ['id', 'title', 'unit_price', 'price_with_tax', 'collection']
+  
+  price_with_tax = serializers.SerializerMethodField(method_name='calculate_tax')
+
+  def calculate_tax(self, product: Product):
+    return product.unit_price * Decimal(1.1)
